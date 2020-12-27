@@ -1,7 +1,6 @@
 package Test;
 
 import JFrame.loginJFrame;
-import Users.userEntity;
 
 public class test {
 

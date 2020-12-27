@@ -1,21 +1,21 @@
-package Users;
+package Entity;
 
 import java.util.Date;
 
 public class dealEntity {
-    private String ownerId;
+    private String No;
     private String employId;
     private String houseId;
     private Date date;
     private String contract;
     private String price;
 
-    public String getOwnerId() {
-        return ownerId;
+    public String getNo() {
+        return No;
     }
 
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
+    public void setNo(String no) {
+        this.No = no;
     }
 
     public String getEmployId() {

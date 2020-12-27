@@ -2,7 +2,7 @@ package JFrame;
 
 import db.MyTableModel;
 import db.db;
-import Users.*;
+import Entity.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,7 +25,7 @@ public class userApply extends JFrame implements ActionListener {
     MyTableModel tableModel;
     JButton add, update, delete;
     JButton[] buttons;
-    int which = 3;//这个数值判断是判断是订单和房子
+    int which = 4;//这个数值判断是判断是订单和房子
     String[] str = {"houseexpect", "house"};
 
     public userApply(String no) throws SQLException {
@@ -35,7 +35,7 @@ public class userApply extends JFrame implements ActionListener {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         this.No = no;
-        String[] menus = {"管理订单", "管理房源", "看房时间查询", "个人信息管理"};
+        String[] menus = {"管理订单", "管理房源", "看房时间查询", "个人信息管理","成交订单查询"};
         this.buttons = new JButton[menus.length];
         for (int i = 0; i < menus.length; i++) {
             this.buttons[i] = new JButton(menus[i]);
@@ -92,8 +92,27 @@ public class userApply extends JFrame implements ActionListener {
             this.add.setVisible(false);
             this.update.setVisible(true);
             this.delete.setVisible(false);
+            try {
+                tableModel = getModel();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+            table.setModel(tableModel);
+        });
+        //成交情况管理
+        this.buttons[4].addActionListener(e->{
+            this.add.setVisible(false);
+            this.update.setVisible(false);
+            this.delete.setVisible(false);
+            try {
+                tableModel = getModel();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+            table.setModel(tableModel);
         });
         this.getContentPane().add(this.toolBar, "North");
+
 
         tableModel = getModel();
         table = new JTable(tableModel);
@@ -311,7 +330,6 @@ public class userApply extends JFrame implements ActionListener {
         MyTableModel tableModel = new MyTableModel();
         db dbCon;
         dbCon = new db();
-//        ResultSet rs = dbCon.executeQuery("select * from person");
         ResultSet rs = dbCon.executeQuery("select * from houseexpect where userId = '" + No + "'");
 
         String[] label = {"HouseNo", "Area", "Location", "Type", "Price", "OwnerId"};
@@ -429,7 +447,7 @@ public class userApply extends JFrame implements ActionListener {
             }
             dbCon.closeConn();
             return tableModel;
-        } else {
+        } else if (which == 3){
             //这里是个人信息管理
             int i;
             ResultSet resultSet = dbCon.executeQuery("select * from user where No = '" + No + "'");
@@ -453,6 +471,41 @@ public class userApply extends JFrame implements ActionListener {
                 tableModel.addRow(new Object[]{
                         v.get(i).getName(),
                         v.get(i).getTele()
+                });
+            }
+            dbCon.closeConn();
+            return tableModel;
+        }
+        else {
+            //这里是已经成交订单查询
+            int i;
+            ResultSet resultSet = dbCon.executeQuery("select * from deal where No = '" + No + "'");
+
+            //身份证号不支持修改
+            //应该看不到房主另一方，因为是和中介签和议
+            String[] str_personal = {"房子编码", "中介人","成交时间","成交价格"};
+            for (i = 0; i < str_personal.length; i++) {
+                tableModel.addColumn(str_personal[i]);
+            }
+
+            //自己个人信息
+            ArrayList<dealEntity> v = new ArrayList<dealEntity>();
+            while (resultSet.next()) {
+                dealEntity dealEntity = new dealEntity();
+                dealEntity.setContract(resultSet.getString("contract"));
+                dealEntity.setDate(resultSet.getDate("Time"));
+                dealEntity.setEmployId(resultSet.getString("EmployerID"));
+                dealEntity.setHouseId(resultSet.getString("HouseNo"));
+                dealEntity.setPrice(resultSet.getString("Price"));
+                v.add(dealEntity);
+            }
+            rs.close();
+            for (i = 0; i < v.size(); i++) {
+                tableModel.addRow(new Object[]{
+                        v.get(i).getHouseId(),
+                        v.get(i).getEmployId(),
+                        v.get(i).getDate().toString(),
+                        v.get(i).getPrice()
                 });
             }
             dbCon.closeConn();

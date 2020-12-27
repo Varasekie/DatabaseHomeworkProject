@@ -1,6 +1,6 @@
 package JFrame;
 
-import Users.userEntity;
+import Entity.userEntity;
 import db.db;
 
 import javax.swing.*;
