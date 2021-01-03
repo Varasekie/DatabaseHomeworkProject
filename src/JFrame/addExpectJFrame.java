@@ -14,7 +14,6 @@ public class addExpectJFrame extends JFrame implements ActionListener {
     JTextField[] textFields;
     protected JRadioButton[] radios;
     JButton cancel, add;
-    JRadioButton radioButton;
     JComboBox<String> province, city, region;
     static String[] provinces_string = {"江苏省", "北京市", "浙江", "安徽", "", "", ""};
     static String[][] cities_string = {{"南京市", "苏州市", "无锡市", "徐州市"}, {}, {"绍兴", "嘉兴", "杭州", "衢州"}, {"芜湖"}};

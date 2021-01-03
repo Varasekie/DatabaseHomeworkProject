@@ -115,6 +115,7 @@ public class addHouseJFrame extends JFrame implements ActionListener {
                 userApply userApply = new userApply(No);
                 userApply.setVisible(true);
             } catch (SQLException throwables) {
+
                 throwables.printStackTrace();
             }
         });

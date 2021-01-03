@@ -35,7 +35,7 @@ public class loginJFrame extends JFrame implements ActionListener {
         this.password = new JPasswordField("j3vADrc0f");
         this.getContentPane().add(this.password);
 
-        String[] str = {"用户", "管理员", "员工"};
+        String[] str = {"用户", "员工", "领导"};
         JPanel sex = new JPanel(new GridLayout(1, 3));
         ButtonGroup sex_bg = new ButtonGroup();
         this.radios = new JRadioButton[str.length];
@@ -64,7 +64,6 @@ public class loginJFrame extends JFrame implements ActionListener {
 
     public static void main(String[] args) {
         //然后应该要传回主函数，说明name
-
         new loginJFrame();
     }
 
@@ -116,7 +115,13 @@ public class loginJFrame extends JFrame implements ActionListener {
                     userApply.setVisible(true);
                     dispose();
                 }else if (upd.equals("1")){
-                    employerJFrame employerJFrame = new employerJFrame(name);
+                    employerJFrame employerJFrame = null;
+                    try {
+                        employerJFrame = new employerJFrame(name);
+                    } catch (SQLException throwables) {
+                        throwables.printStackTrace();
+                    }
+                    assert employerJFrame != null;
                     employerJFrame.setVisible(true);
                 }
 

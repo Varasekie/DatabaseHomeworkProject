@@ -25,7 +25,7 @@ public class userApply extends JFrame implements ActionListener {
     MyTableModel tableModel;
     JButton add, update, delete;
     JButton[] buttons;
-    int which = 4;//这个数值判断是判断是订单和房子
+    int which = 3 ;//这个数值判断是判断是订单和房子
     String[] str = {"houseexpect", "house"};
 
     public userApply(String no) throws SQLException {
@@ -35,7 +35,7 @@ public class userApply extends JFrame implements ActionListener {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         this.No = no;
-        String[] menus = {"管理订单", "管理房源", "看房时间查询", "个人信息管理","成交订单查询"};
+        String[] menus = {"管理订单", "管理房源", "看房时间查询", "个人信息管理", "成交订单查询"};
         this.buttons = new JButton[menus.length];
         for (int i = 0; i < menus.length; i++) {
             this.buttons[i] = new JButton(menus[i]);
@@ -70,7 +70,6 @@ public class userApply extends JFrame implements ActionListener {
                 throwables.printStackTrace();
             }
         });
-
         //看房
         this.buttons[2].addActionListener(e -> {
             which = 2;
@@ -86,9 +85,9 @@ public class userApply extends JFrame implements ActionListener {
             }
             table.setModel(tableModel);
         });
-
         //个人信息
         this.buttons[3].addActionListener(e -> {
+            which = 3;
             this.add.setVisible(false);
             this.update.setVisible(true);
             this.delete.setVisible(false);
@@ -100,7 +99,8 @@ public class userApply extends JFrame implements ActionListener {
             table.setModel(tableModel);
         });
         //成交情况管理
-        this.buttons[4].addActionListener(e->{
+        this.buttons[4].addActionListener(e -> {
+            which = 4;
             this.add.setVisible(false);
             this.update.setVisible(false);
             this.delete.setVisible(false);
@@ -188,7 +188,6 @@ public class userApply extends JFrame implements ActionListener {
                     throwables.printStackTrace();
                 }
             }
-
             //第二部分是更新房屋信息
             else if (which == 1) {
                 int i, index = 0, count;
@@ -332,10 +331,9 @@ public class userApply extends JFrame implements ActionListener {
         dbCon = new db();
         ResultSet rs = dbCon.executeQuery("select * from houseexpect where userId = '" + No + "'");
 
-        String[] label = {"HouseNo", "Area", "Location", "Type", "Price", "OwnerId"};
         String[] str = {"编号", "属性", "最低价格", "最高价格", "地段", "最低面积", "最高面积", "状态"};
-        String[] labels = {"HouseExNo", "Type", "Price_low", "Price_high", "Section", "Area_low", "Area_high", "Conditions"};
         ResultSetMetaData rsmd = rs.getMetaData();
+        //这里是订单
         if (which == 0) {
             int i;
 
@@ -374,7 +372,9 @@ public class userApply extends JFrame implements ActionListener {
             }
             dbCon.closeConn();
             return tableModel;
-        } else if (which == 1) {
+        }
+        //这里是房子拥有的管理
+        else if (which == 1) {
             int i;
             ResultSet resultSet = dbCon.executeQuery("select * from house where OwnerId = '" + No + "'");
             String[] str_house = {"编号", "面积", "地址", "用途", "价格", "处理人", "图片", "状态"};
@@ -411,7 +411,9 @@ public class userApply extends JFrame implements ActionListener {
             }
             dbCon.closeConn();
             return tableModel;
-        } else if (which == 2) {
+        }
+        //这里是预约的查询
+        else if (which == 2) {
             //这里是看房时间
             int i;
             ResultSet resultSet = dbCon.executeQuery("select * from inspect_view where UserNo = '" + No + "'");
@@ -435,7 +437,7 @@ public class userApply extends JFrame implements ActionListener {
                 inspectionEntity.setUserName(resultSet.getString("userName"));
                 v.add(inspectionEntity);
             }
-            rs.close();
+            resultSet.close();
             for (i = 0; i < v.size(); i++) {
                 tableModel.addRow(new Object[]{
                         v.get(i).getUserName(),
@@ -447,8 +449,9 @@ public class userApply extends JFrame implements ActionListener {
             }
             dbCon.closeConn();
             return tableModel;
-        } else if (which == 3){
-            //这里是个人信息管理
+        }
+        //这里是个人信息管理
+        else if (which == 3) {
             int i;
             ResultSet resultSet = dbCon.executeQuery("select * from user where No = '" + No + "'");
 
@@ -466,7 +469,7 @@ public class userApply extends JFrame implements ActionListener {
                 userEntity.setName(resultSet.getString("Name"));
                 v.add(userEntity);
             }
-            rs.close();
+            resultSet.close();
             for (i = 0; i < v.size(); i++) {
                 tableModel.addRow(new Object[]{
                         v.get(i).getName(),
@@ -476,14 +479,14 @@ public class userApply extends JFrame implements ActionListener {
             dbCon.closeConn();
             return tableModel;
         }
+        //这里是已经成交订单查询
         else {
-            //这里是已经成交订单查询
             int i;
             ResultSet resultSet = dbCon.executeQuery("select * from deal where No = '" + No + "'");
 
             //身份证号不支持修改
             //应该看不到房主另一方，因为是和中介签和议
-            String[] str_personal = {"房子编码", "中介人","成交时间","成交价格"};
+            String[] str_personal = {"房子编码", "中介人", "成交时间", "成交价格"};
             for (i = 0; i < str_personal.length; i++) {
                 tableModel.addColumn(str_personal[i]);
             }
@@ -499,7 +502,7 @@ public class userApply extends JFrame implements ActionListener {
                 dealEntity.setPrice(resultSet.getString("Price"));
                 v.add(dealEntity);
             }
-            rs.close();
+            resultSet.close();
             for (i = 0; i < v.size(); i++) {
                 tableModel.addRow(new Object[]{
                         v.get(i).getHouseId(),
