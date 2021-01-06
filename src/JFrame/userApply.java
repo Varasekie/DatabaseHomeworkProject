@@ -1,32 +1,24 @@
 package JFrame;
 
-import db.MyTableModel;
-import db.db;
+import db.*;
 import Entity.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 //该界面为用户登录后，选择和自己期望相同的
-public class userApply extends JFrame implements ActionListener {
+public class userApply extends JFrame {
     private JTable table;
     JToolBar toolBar = new JToolBar();
     private String No;
-    JMenuBar jMenuBar;
-    JMenu[] menus;
-    JMenuItem[][] menuItems;
     MyTableModel tableModel;
     JButton add, update, delete;
     JButton[] buttons;
-    int which = 3 ;//这个数值判断是判断是订单和房子
-    String[] str = {"houseexpect", "house"};
+    int which = 0;//这个数值判断是判断是订单和房子
 
     public userApply(String no) throws SQLException {
         super("房产中介系统");
@@ -58,17 +50,19 @@ public class userApply extends JFrame implements ActionListener {
         });
         //自己的房子
         this.buttons[1].addActionListener(e -> {
+            which = 1;
+            //显示可见
+            this.add.setVisible(true);
+            this.delete.setVisible(true);
+            this.update.setVisible(true);
             try {
-                which = 1;
-                //显示可见
-                this.add.setVisible(true);
-                this.delete.setVisible(true);
-                this.update.setVisible(true);
                 tableModel = getModel();
-                table.setModel(tableModel);
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+//                throwables.printStackTrace();
+                JOptionPane.showMessageDialog(null, "获取数据失败");
             }
+            table.setModel(tableModel);
+
         });
         //看房
         this.buttons[2].addActionListener(e -> {
@@ -81,7 +75,8 @@ public class userApply extends JFrame implements ActionListener {
             try {
                 tableModel = getModel();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                JOptionPane.showMessageDialog(null, "获取数据失败");
+//                throwables.printStackTrace();
             }
             table.setModel(tableModel);
         });
@@ -94,7 +89,8 @@ public class userApply extends JFrame implements ActionListener {
             try {
                 tableModel = getModel();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+//                throwables.printStackTrace();
+                JOptionPane.showMessageDialog(null, "获取数据失败");
             }
             table.setModel(tableModel);
         });
@@ -107,7 +103,9 @@ public class userApply extends JFrame implements ActionListener {
             try {
                 tableModel = getModel();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+//                throwables.printStackTrace();
+                JOptionPane.showMessageDialog(null, "获取数据失败");
+
             }
             table.setModel(tableModel);
         });
@@ -137,19 +135,17 @@ public class userApply extends JFrame implements ActionListener {
             } else if (which == 1) {
                 addHouseJFrame addHouseJFrame = new addHouseJFrame(this.No);
                 addHouseJFrame.setVisible(true);
-            } else {
-                JOptionPane.showConfirmDialog(null, "没有增加权限");
             }
-
             try {
                 tableModel = getModel();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                JOptionPane.showMessageDialog(null, "获取数据失败");
             }
             table.setModel(tableModel);
         });
 
         //更新，更新是不需要确认的，删除需要（但是也可以加一个
+        //还是加一个确认吧x不然看不出来更新了哪一个
         this.update.addActionListener(e -> {
             //第一部分是更新订单
             if (which == 0) {
@@ -162,30 +158,48 @@ public class userApply extends JFrame implements ActionListener {
                 String update_sql = "update houseexpect set Type =? ,Price_low = ? ,Price_high = ? ," +
                         "Section = ?,Area_low = ?," +
                         "Area_high = ? where HouseExNo = ?";
-                try {
-                    PreparedStatement presta = db.preparedStatement(update_sql);
-                    //获得修改的行数
+                if (table.getSelectedRows().length > 0) {
+                    //获得选中行的序列
+
+                    StringBuilder confirm = new StringBuilder();
+
                     count = tableModel.getEditedIndex().size();
                     if (count > 0) {
                         for (i = 0; i < count; i++) {
                             index = tableModel.getEditedIndex().get(i);
-                            presta.setString(1, (String) table.getValueAt(index, 1));
-                            presta.setString(2, (String) table.getValueAt(index, 2));
-                            presta.setString(3, (String) table.getValueAt(index, 3));
-                            presta.setString(4, (String) table.getValueAt(index, 4));
-                            presta.setString(5, (String) table.getValueAt(index, 5));
-                            presta.setString(6, (String) table.getValueAt(index, 6));
-                            presta.setString(7, (String) table.getValueAt(index, 0));
-                            presta.addBatch();
+                            confirm.append("{");
+                            for (int k = 0; k < table.getColumnCount(); k++) {
+                                confirm.append(table.getColumnName(k)).append(table.getValueAt(index, k)).append("\n");
+                            }
+                            confirm.append("}");
                         }
-
-                        presta.executeBatch();
-                        tableModel.clearEditedIndex();
                     }
+                    int n = JOptionPane.showConfirmDialog(null, "确认修改为" + confirm);
+                    if (n == 0) {
+                        try {
+                            PreparedStatement presta = db.preparedStatement(update_sql);
+                            //获得修改的行数
+                            if (count > 0) {
+                                for (i = 0; i < count; i++) {
+                                    index = tableModel.getEditedIndex().get(i);
+                                    presta.setString(1, (String) table.getValueAt(index, 1));
+                                    presta.setString(2, (String) table.getValueAt(index, 2));
+                                    presta.setString(3, (String) table.getValueAt(index, 3));
+                                    presta.setString(4, (String) table.getValueAt(index, 4));
+                                    presta.setString(5, (String) table.getValueAt(index, 5));
+                                    presta.setString(6, (String) table.getValueAt(index, 6));
+                                    presta.setString(7, (String) table.getValueAt(index, 0));
+                                    presta.addBatch();
+                                }
+                                presta.executeBatch();
+                                tableModel.clearEditedIndex();
+                            }
 
-                    JOptionPane.showMessageDialog(null, "更新成功");
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                            JOptionPane.showMessageDialog(null, "更新成功");
+                        } catch (SQLException throwables) {
+                            JOptionPane.showMessageDialog(null, "更新失败");
+                        }
+                    }
                 }
             }
             //第二部分是更新房屋信息
@@ -196,6 +210,20 @@ public class userApply extends JFrame implements ActionListener {
                     table.getCellEditor().stopCellEditing();
                 }
 
+                StringBuilder confirm = new StringBuilder();
+
+                count = tableModel.getEditedIndex().size();
+                if (count > 0) {
+                    for (i = 0; i < count; i++) {
+                        index = tableModel.getEditedIndex().get(i);
+                        confirm.append("{");
+                        for (int k = 0; k < table.getColumnCount(); k++) {
+                            confirm.append(table.getColumnName(k)).append(table.getValueAt(index, k)).append("\n");
+                        }
+                        confirm.append("}");
+                    }
+                }
+                int n = JOptionPane.showConfirmDialog(null, "确认修改为" + confirm);
                 String update_sql = "update house set Area = ? ,Location = ? ,Type =? ," +
                         " Price = ?," +
                         "Picture = ? ,Conditions = ? where HouseNo = ?";
@@ -210,8 +238,8 @@ public class userApply extends JFrame implements ActionListener {
                             presta.setString(2, (String) table.getValueAt(index, 2));
                             presta.setString(3, (String) table.getValueAt(index, 3));
                             presta.setString(4, (String) table.getValueAt(index, 4));
-                            presta.setString(5, (String) table.getValueAt(index, 6));
-                            presta.setString(6, (String) table.getValueAt(index, 7));
+                            presta.setString(5, null);
+                            presta.setString(6, "空闲");
                             presta.setString(7, (String) table.getValueAt(index, 0));
                             presta.addBatch();
                         }
@@ -220,7 +248,8 @@ public class userApply extends JFrame implements ActionListener {
                     }
                     JOptionPane.showMessageDialog(null, "更新成功");
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "更新失败");
+
                 }
             }
             //第三部分更新个人信息,后期应该可以用这个，做个改身份证的话要备份什么的功能，现在就先不做了
@@ -232,6 +261,20 @@ public class userApply extends JFrame implements ActionListener {
                     table.getCellEditor().stopCellEditing();
                 }
 
+                StringBuilder confirm = new StringBuilder();
+
+                count = tableModel.getEditedIndex().size();
+                if (count > 0) {
+                    for (i = 0; i < count; i++) {
+                        index = tableModel.getEditedIndex().get(i);
+                        confirm.append("{");
+                        for (int k = 0; k < table.getColumnCount(); k++) {
+                            confirm.append(table.getColumnName(k)).append(table.getValueAt(index, k)).append("\n");
+                        }
+                        confirm.append("}");
+                    }
+                }
+                int n = JOptionPane.showConfirmDialog(null, "确认修改为" + confirm);
                 String update_sql = "update user set tele = ? where No = '" + No + "'";
                 try {
                     PreparedStatement presta = db.preparedStatement(update_sql);
@@ -248,7 +291,7 @@ public class userApply extends JFrame implements ActionListener {
                     }
                     JOptionPane.showMessageDialog(null, "更新成功");
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "更新失败");
                 }
             }
 
@@ -256,6 +299,7 @@ public class userApply extends JFrame implements ActionListener {
 
         //删除
         this.delete.addActionListener(e -> {
+            //订单
             if (which == 0) {
                 db db = new db();
                 if (table.getSelectedRows().length > 0) {
@@ -283,42 +327,50 @@ public class userApply extends JFrame implements ActionListener {
                             tableModel = getModel();
                             table.setModel(tableModel);
                         } catch (SQLException throwables) {
-                            throwables.printStackTrace();
+//                            throwables.printStackTrace();
+                            JOptionPane.showMessageDialog(null, "删除失败");
                         }
                     }
                 }
-            } else {
-                db db = new db();
-                if (table.getSelectedRows().length > 0) {
-                    //获得选中行的序列
-                    int[] selRowIndexes = table.getSelectedRows();
-                    StringBuilder confirm = new StringBuilder();
-                    try {
-                        for (int rowIndex : selRowIndexes) {
-                            confirm.append("{");
-                            for (int k = 0; k < table.getColumnCount(); k++) {
-                                confirm.append(table.getColumnName(k)).append(table.getValueAt(rowIndex, k)).append("\n");
-                            }
-                            confirm.append("}");
-                        }
 
-                        int n = JOptionPane.showConfirmDialog(null, "确认删除" + confirm);
-                        //如果n为确定，就删除
-                        if (n == 0) {
-                            PreparedStatement preparedStatement = db.preparedStatement("delete from house where HouseNo = ?");
-                            for (int selRowIndex : selRowIndexes) {
-                                preparedStatement.setString(1, table.getValueAt(selRowIndex, 0).toString());
-                                preparedStatement.addBatch();
+            }
+            //房源
+            else if (which == 1) {
+                    db db = new db();
+                    if (table.getSelectedRows().length > 0) {
+                        //获得选中行的序列
+                        int[] selRowIndexes = table.getSelectedRows();
+                        StringBuilder confirm = new StringBuilder();
+                        try {
+                            for (int rowIndex : selRowIndexes) {
+                                confirm.append("{");
+                                for (int k = 0; k < table.getColumnCount(); k++) {
+                                    confirm.append(table.getColumnName(k)).append(table.getValueAt(rowIndex, k)).append("\n");
+                                }
+                                confirm.append("}");
                             }
-                            preparedStatement.executeBatch();
+
+                            int n = JOptionPane.showConfirmDialog(null, "确认删除" + confirm);
+                            //如果n为确定，就删除
+                            if (n == 0) {
+                                PreparedStatement preparedStatement = db.preparedStatement("delete from house where HouseNo = ?");
+                                for (int selRowIndex : selRowIndexes) {
+                                    preparedStatement.setString(1, table.getValueAt(selRowIndex, 0).toString());
+                                    preparedStatement.addBatch();
+                                }
+                                preparedStatement.executeBatch();
+                            }
+                            tableModel = getModel();
+                            table.setModel(tableModel);
+                            JOptionPane.showMessageDialog(null, "成功删除");
+
+                        } catch (SQLException throwables) {
+//                        throwables.printStackTrace();
+                            JOptionPane.showMessageDialog(null, "删除失败");
+
                         }
-                        tableModel = getModel();
-                        table.setModel(tableModel);
-                    } catch (SQLException throwables) {
-                        throwables.printStackTrace();
                     }
                 }
-            }
 
         });
         this.getContentPane().add(jPanel, "South");
@@ -329,13 +381,12 @@ public class userApply extends JFrame implements ActionListener {
         MyTableModel tableModel = new MyTableModel();
         db dbCon;
         dbCon = new db();
-        ResultSet rs = dbCon.executeQuery("select * from houseexpect where userId = '" + No + "'");
 
-        String[] str = {"编号", "属性", "最低价格", "最高价格", "地段", "最低面积", "最高面积", "状态"};
-        ResultSetMetaData rsmd = rs.getMetaData();
         //这里是订单
         if (which == 0) {
             int i;
+            ResultSet rs = dbCon.executeQuery("select * from houseexpect where userId = '" + No + "'");
+            String[] str = {"编号", "属性", "最低价格", "最高价格", "地段", "最低面积", "最高面积", "状态"};
 
             for (i = 0; i < str.length; i++) {
                 tableModel.addColumn(str[i]);
@@ -350,10 +401,10 @@ public class userApply extends JFrame implements ActionListener {
                 houseExceptedEntity.setNo(rs.getString("HouseExNo"));
                 houseExceptedEntity.setType(rs.getString("Type"));
                 houseExceptedEntity.setPrice_low(rs.getString("Price_low"));
-                houseExceptedEntity.setPrice_high(rs.getString("Price_high").equals("") ? "无上限" : rs.getString("Price_high"));
+                houseExceptedEntity.setPrice_high(rs.getString("Price_high").equals("0") ? "无上限" : rs.getString("Price_high"));
                 houseExceptedEntity.setSection(rs.getString("Section"));
                 houseExceptedEntity.setArea_low(rs.getString("Area_low"));
-                houseExceptedEntity.setArea_high(rs.getString("Area_high").equals("") ? "无上限" : rs.getString("Area_high"));
+                houseExceptedEntity.setArea_high(rs.getString("Area_high").equals("0") ? "无上限" : rs.getString("Area_high"));
                 houseExceptedEntity.setConditions(rs.getString("Conditions"));
                 v.add(houseExceptedEntity);
             }
@@ -376,14 +427,13 @@ public class userApply extends JFrame implements ActionListener {
         //这里是房子拥有的管理
         else if (which == 1) {
             int i;
-            ResultSet resultSet = dbCon.executeQuery("select * from house where OwnerId = '" + No + "'");
-            String[] str_house = {"编号", "面积", "地址", "用途", "价格", "处理人", "图片", "状态"};
+            ResultSet resultSet = dbCon.executeQuery("select * from house where ownerId = '" + No + "'");
+            String[] str = {"编号", "面积", "地段", "类型", "价格", "管理人"};
 
             for (i = 0; i < str.length; i++) {
-                tableModel.addColumn(str_house[i]);
+                tableModel.addColumn(str[i]);
             }
 
-            //展示自己期望
             ArrayList<houseEntity> v = new ArrayList<houseEntity>();
             while (resultSet.next()) {
                 houseEntity houseEntity = new houseEntity();
@@ -396,7 +446,7 @@ public class userApply extends JFrame implements ActionListener {
                 houseEntity.setEmployId(resultSet.getString("EmployerId"));
                 v.add(houseEntity);
             }
-            rs.close();
+            resultSet.close();
             for (i = 0; i < v.size(); i++) {
                 tableModel.addRow(new Object[]{
                         v.get(i).getNo(),
@@ -405,7 +455,6 @@ public class userApply extends JFrame implements ActionListener {
                         v.get(i).getType(),
                         v.get(i).getPrice(),
                         v.get(i).getEmployId(),
-                        v.get(i).getPicture(),
                         v.get(i).getCondition()
                 });
             }
@@ -517,11 +566,6 @@ public class userApply extends JFrame implements ActionListener {
 
     }
 
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-    }
 
     public static void main(String[] args) throws SQLException {
         new userApply("244201");

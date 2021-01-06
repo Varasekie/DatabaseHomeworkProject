@@ -17,8 +17,6 @@ public class loginJFrame extends JFrame implements ActionListener {
     private JRadioButton[] radios;
     public userEntity userEntity;
 
-
-
     public loginJFrame() {
         super();
         this.setSize(500, 200);
@@ -27,7 +25,7 @@ public class loginJFrame extends JFrame implements ActionListener {
 
         this.setLayout(new GridLayout(4, 2));
 
-        this.getContentPane().add(new JLabel("身份证号"));
+        this.getContentPane().add(new JLabel("员工号"));
         this.username = new JTextField("244201");
         this.getContentPane().add(this.username);
 
@@ -42,7 +40,6 @@ public class loginJFrame extends JFrame implements ActionListener {
         for (int i = 0; i < str.length; i++) {
             this.radios[i] = new JRadioButton(str[i]);
             sex_bg.add(this.radios[i]);
-//            this.getContentPane().add(radios[i]);
             sex.add(this.radios[i]);
         }
         this.radios[0].setSelected(true);
@@ -50,13 +47,15 @@ public class loginJFrame extends JFrame implements ActionListener {
 
         this.getContentPane().add(sex);
 
-        login = new JButton("login");
+        login = new JButton("登录");
         this.login.addActionListener(this);
-        this.register = new JButton("register");
-        this.register.addActionListener(this::actionPerformed);
+        this.register = new JButton("注册");
+        this.register.addActionListener(this);
         this.getContentPane().add(login);
         this.getContentPane().add(register);
-
+        this.login.addActionListener(e -> {
+            this.dispose();
+        });
 
         this.setVisible(true);
     }
@@ -69,15 +68,15 @@ public class loginJFrame extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == this.register){
-            register_user register_user= new register_user();
-            return;
-        }
-
-        if (e.getSource() == this.login){
+        //注册还是登录
+        if (e.getSource() == this.register) {
+            register_user register_user = new register_user();
+            register_user.setVisible(true);
+        } else if (e.getSource() == this.login) {
             //判断是用户还是员工
 
-            db dbCon = new db();
+            //此处只能用root权限判定，当然也可以用游客权限
+            db dbCon = new db(1);
             //用户登录，判断no和密码
             String name = new String(username.getText());
             String upd = new String(radios[0].isSelected() ? "0" : (radios[1].isSelected() ? "1" : "2"));
@@ -95,31 +94,28 @@ public class loginJFrame extends JFrame implements ActionListener {
                 rs.close();
                 dbCon.closeConn();
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                JOptionPane.showMessageDialog(null, "登陆失败");
             }
 
             if (!get.equals("")) {
                 JOptionPane.showMessageDialog(null, "登陆成功");
-                if (upd.equals("0")){
+                if (upd.equals("0")) {
                     userEntity = new userEntity(name);
-//            System.out.println(userEntity.getIDCard());
-//            System.out.println(userEntity == null);
-
                     userApply userApply = null;
                     try {
                         userApply = new userApply(name);
                     } catch (SQLException throwables) {
-                        throwables.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "登陆失败");
                     }
                     assert userApply != null;
                     userApply.setVisible(true);
                     dispose();
-                }else if (upd.equals("1")){
+                } else if (upd.equals("1")) {
                     employerJFrame employerJFrame = null;
                     try {
                         employerJFrame = new employerJFrame(name);
                     } catch (SQLException throwables) {
-                        throwables.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "登陆失败");
                     }
                     assert employerJFrame != null;
                     employerJFrame.setVisible(true);

@@ -3,8 +3,6 @@ package JFrame;
 import db.db;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,10 +17,11 @@ public class register_user extends JFrame implements ActionListener, FocusListen
     private JPasswordField password, passwordAgain;
     private JRadioButton male, female;
     private JButton register, cancel;
-    private boolean NoFlag = false, IDFlag, nameFlag, teleFlag, passFlag, passAgainFlag = false;
-    //    private JLabel successfulJFram, successfulConfirm;
-    private JLabel userIdMesssage1, userIdMesssage2, passwordMesssage, confirmPasswordMesssage,IDcardMessage;
-    private JLabel emailMessage1, emailMessage2, phoneMessage1;
+    private final JLabel userIdMesssage1;
+    private final JLabel passwordMesssage;
+
+    private final JLabel confirmPasswordMesssage;
+    private final JLabel emailMessage2, phoneMessage1;
 
     public register_user() {
         super();
@@ -40,7 +39,7 @@ public class register_user extends JFrame implements ActionListener, FocusListen
         //自动生成
         panel.add(new JLabel("用户编号"));
         //一般是不会出错的……orz
-        userIdMesssage2 = new JLabel(new ImageIcon("message/已注册.png"));
+        JLabel userIdMesssage2 = new JLabel("已注册");
         userIdMesssage2.setBounds(580, 125, 135, 20);
         userIdMesssage2.setVisible(false);
         panel.add(userIdMesssage2);
@@ -57,6 +56,7 @@ public class register_user extends JFrame implements ActionListener, FocusListen
         panel.add(name = new JTextField(10));
 
         //然后添加监视器
+        //姓名规范
         this.name.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -67,7 +67,6 @@ public class register_user extends JFrame implements ActionListener, FocusListen
             public void focusLost(FocusEvent e) {
                 String names = name.getText();
                 if (names.equals("") || names.matches("[0-9]+")) {
-//                    JOptionPane.showMessageDialog(null,"用户名不规范");
                     userIdMesssage1.setVisible(true);
                     return;
                 }
@@ -94,6 +93,7 @@ public class register_user extends JFrame implements ActionListener, FocusListen
         panel.add(passwordAgain);
 
 
+        //密码输入
         password.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -111,7 +111,8 @@ public class register_user extends JFrame implements ActionListener, FocusListen
             }
         });
 
-//
+
+        //重复密码
         passwordAgain.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -156,6 +157,8 @@ public class register_user extends JFrame implements ActionListener, FocusListen
         ID = new JTextField("110101199007134713");
         //new JTextField(10);
         ;
+
+        //判断身份证号
         ID.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -174,22 +177,21 @@ public class register_user extends JFrame implements ActionListener, FocusListen
 
                 //然后在判断是否数据库中已经有了这个身份证，有的话显示已经有了
                 String sql_id = "select * from user where ID = '" + idText + "'";
-                //暂时先都用root权限登录，别的……再说
-                db dbCon = new db();
+                //暂时先都用root权限登录
+                //后期这里改成了游客
+                db dbCon = new db(1);
                 try {
                     ResultSet rs = dbCon.executeQuery(sql_id);
                     if (rs.next()) {
                         //防止结果集为空报错
                         rs.last();
                         emailMessage2.setVisible(true);
-                    }else emailMessage2.setVisible(false);
+                    } else emailMessage2.setVisible(false);
                     rs.close();
                     dbCon.closeConn();
                 } catch (SQLException ignored) {
 
                 }
-
-                //12.19
             }
         });
         panel.add(ID);
@@ -220,7 +222,6 @@ public class register_user extends JFrame implements ActionListener, FocusListen
         });
 
         this.getContentPane().add(panel);
-//        this.getContentPane().add(cont);
 
         JPanel cont2 = new JPanel(new GridLayout(1, 2));
         cont2.add(register = new JButton("注册"));
@@ -228,20 +229,13 @@ public class register_user extends JFrame implements ActionListener, FocusListen
         cont2.add(cancel = new JButton("取消"));
         cancel.addActionListener(this);
         this.getContentPane().add(cont2);
-        this.setVisible(true);
 
-
-    }
-
-    public static void main(String[] args) {
-        //通过这个注册，会产生一个新的对象
-
-        new register_user();
 
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        //进行注册
         if (e.getSource() == this.register) {
             String no = username.getText();
             String pass = new String(password.getPassword());
@@ -262,7 +256,6 @@ public class register_user extends JFrame implements ActionListener, FocusListen
                 if (value == JOptionPane.YES_OPTION) {
                     String sql_register_pass = "insert into password(ID,Password,Upower) " +
                             "Values (" + No + "," + pass + "," + 0 + ")";
-                    System.out.println(sql_register_pass);
                     String sql_register_user = "insert into user(No,Name,Sex,ID,Tele)" +
                             "Values (" + No + "," + name + "," + sex + "," + username + "," + tele + ")";
 
@@ -274,14 +267,12 @@ public class register_user extends JFrame implements ActionListener, FocusListen
                         if (rs.next()) {
                             //防止结果集为空报错
                             rs.last();
-//                            emailMessage2.setVisible(true);
                         }
-//                        rs = dbCon.executeQuery(sql_id);
                         rs.close();
                         dbCon.closeConn();
-
                         this.dispose();
-                        new userApply(no);
+                        userApply userApply = new userApply(no);
+                        userApply.setVisible(true);
                     } catch (SQLException ignored) {
 
                     }
@@ -291,8 +282,9 @@ public class register_user extends JFrame implements ActionListener, FocusListen
             }
         }
 
+        //退出系统
         if (e.getSource() == this.cancel) {
-            dispose();
+            this.dispose();
         }
     }
 
