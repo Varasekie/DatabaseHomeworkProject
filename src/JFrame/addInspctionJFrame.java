@@ -109,7 +109,7 @@ public class addInspctionJFrame extends JFrame implements ActionListener {
                 employerJFrame employerJFrame = new employerJFrame(No);
                 employerJFrame.setVisible(true);
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+//                throwables.printStackTrace();
             }
         });
         this.cancel.addActionListener(e -> {

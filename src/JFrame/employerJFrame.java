@@ -20,6 +20,7 @@ public class employerJFrame extends JFrame {
     JComboBox<String> year, month;
     int which = 0;
     int count = 0;
+    String user_inneedId = "";
 
     public employerJFrame(String no) throws SQLException {
         super("管理员界面");
@@ -49,7 +50,8 @@ public class employerJFrame extends JFrame {
         }
         for (int i = 1; i <= month.length; i++) {
             month[i - 1] = i + "";
-        }this.year = new JComboBox<>(year);
+        }
+        this.year = new JComboBox<>(year);
         this.month = new JComboBox<>(month);
 
         //待处理订单
@@ -188,11 +190,11 @@ public class employerJFrame extends JFrame {
                 CallableStatement proc = db.prepareCall("{ call col_wage(?, ?,?,?) }");
 
                 //获取选中的年月
-                int years =Integer.parseInt((String) Objects.requireNonNull(this.year.getSelectedItem())) ;
+                int years = Integer.parseInt((String) Objects.requireNonNull(this.year.getSelectedItem()));
                 int months = Integer.parseInt((String) Objects.requireNonNull(this.month.getSelectedItem()));
                 //就是没选中
-                if (years == -1 || months == -1){
-                    JOptionPane.showMessageDialog(null,"请先选中年月");
+                if (years == -1 || months == -1) {
+                    JOptionPane.showMessageDialog(null, "请先选中年月");
                 }
                 proc.setDate(1, new Date(years - months));
                 proc.setInt(2, 100);
@@ -202,10 +204,10 @@ public class employerJFrame extends JFrame {
 
                 int i = proc.getInt(4);
 
-                if (count == 1){
-                    i = count-100;
+                if (count == 1) {
+                    i = count - 100;
                 }
-                JOptionPane.showMessageDialog(null,"这个月的提成为"+i+"元");
+                JOptionPane.showMessageDialog(null, "这个月的提成为" + i + "元");
                 count++;
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
@@ -600,6 +602,7 @@ public class employerJFrame extends JFrame {
                 if (row == -1) {
                     JOptionPane.showMessageDialog(null, "请选中某一行");
                 }
+
                 String sql = "select *  from house where conditions = '空闲' " +
                         "and price >='" + (table.getValueAt(row, 2) == null ? "0" : table.getValueAt(row, 2).toString()) +
                         "' and price <= '" + table.getValueAt(row, 3).toString() +
@@ -609,12 +612,13 @@ public class employerJFrame extends JFrame {
                         "' and type = '" + table.getValueAt(row, 1).toString() + "'";
                 ResultSet resultSet = db.executeQuery(sql);
 
-                String[] str = {"编号", "面积", "地段", "类型", "价格"};
+                String[] str = {"房子编号", "面积", "地段", "类型", "价格"};
 
                 for (String s : str) {
                     tableModel1.addColumn(s);
                 }
 
+                this.user_inneedId = table.getValueAt(row, 8).toString();
                 ArrayList<houseEntity> v = new ArrayList<houseEntity>();
                 ArrayList<userEntity> user = new ArrayList<userEntity>();
                 while (resultSet.next()) {
@@ -652,7 +656,7 @@ public class employerJFrame extends JFrame {
             }
             matchHouseJFrame matchHouseJFrame = null;
             try {
-                matchHouseJFrame = new matchHouseJFrame(tableModel1);
+                matchHouseJFrame = new matchHouseJFrame(tableModel1, this.No,this.user_inneedId);
                 matchHouseJFrame.setVisible(true);
             } catch (SQLException throwables) {
                 JOptionPane.showMessageDialog(null, "匹配失败");
@@ -687,7 +691,7 @@ public class employerJFrame extends JFrame {
                 rs = dbCon.executeQuery("select * from houseexpect where conditions = '未处理' and EmployerID = '" + No + "'");
             }
             //中介应该能看到比较详细的内容(哎算了都一样，看到的都是那些而已
-            String[] str_houseexpect = {"编号", "属性", "最低价格", "最高价格", "地段", "最低面积", "最高面积", "状态"};
+            String[] str_houseexpect = {"需求编号", "属性", "最低价格", "最高价格", "地段", "最低面积", "最高面积", "状态","需求人id"};
 
             for (i = 0; i < str_houseexpect.length; i++) {
                 tableModel.addColumn(str_houseexpect[i]);
@@ -704,6 +708,8 @@ public class employerJFrame extends JFrame {
                 houseExceptedEntity.setArea_low(rs.getString("Area_low"));
                 houseExceptedEntity.setArea_high(rs.getString("Area_high").equals("") ? "无上限" : rs.getString("Area_high"));
                 houseExceptedEntity.setConditions(rs.getString("Conditions"));
+
+                houseExceptedEntity.setUserId(rs.getString("UserId"));
                 v.add(houseExceptedEntity);
             }
             rs.close();
@@ -716,7 +722,9 @@ public class employerJFrame extends JFrame {
                         v.get(i).getSection(),
                         v.get(i).getArea_low(),
                         v.get(i).getArea_high(),
-                        v.get(i).getConditions()
+                        v.get(i).getConditions(),
+                        v.get(i).getUserId()
+
                 });
             }
             dbCon.closeConn();

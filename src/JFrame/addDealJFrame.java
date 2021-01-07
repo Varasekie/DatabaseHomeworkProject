@@ -21,7 +21,6 @@ public class addDealJFrame extends JFrame implements FocusListener {
 
     public addDealJFrame(String No) {
         super("添加成交订单");
-//        String[] deal_str = {"房子编号","卖家姓名","卖家电话","买家姓名","买家电话","成交时间","成交价格"};
         this.setSize(600, 400);
 
         //房子和买家，作为输入项，需要保证外键约束，使用消息提示框。
@@ -29,7 +28,6 @@ public class addDealJFrame extends JFrame implements FocusListener {
         String[] deal_add = {"房子编号", "买家编号", "成交价格", "成交时间"};
         this.getContentPane().setLayout(new GridLayout(deal_add.length + 1, 3));
         this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         this.jTextFields = new JTextField[deal_add.length - 1];
         this.messsage = new JLabel[4];

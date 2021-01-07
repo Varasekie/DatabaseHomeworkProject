@@ -92,9 +92,9 @@ public class addHouseJFrame extends JFrame implements ActionListener {
 
             String type_string = this.radios[0].isSelected() ? "租" : "卖";
             String section_string = Objects.requireNonNull(this.province.getSelectedItem()).toString()
-                    + Objects.requireNonNull(this.city.getSelectedItem()).toString()
-                    + Objects.requireNonNull(this.region.getSelectedItem()).toString()
-                    +this.textArea.getText();
+                    + "省" + Objects.requireNonNull(this.city.getSelectedItem()).toString()
+                    + "市" + Objects.requireNonNull(this.region.getSelectedItem()).toString()
+                    + this.textArea.getText();
             //直接在这里判断，是否有不一样的
             try {
                 PreparedStatement preparedStatement = db.preparedStatement(insert_sql);

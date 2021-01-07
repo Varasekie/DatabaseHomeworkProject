@@ -25,12 +25,14 @@ public class loginJFrame extends JFrame implements ActionListener {
 
         this.setLayout(new GridLayout(4, 2));
 
-        this.getContentPane().add(new JLabel("员工号"));
-        this.username = new JTextField("244201");
+        this.getContentPane().add(new JLabel("身份证号/员工号"));
+        this.username = new JTextField("360102199509154151");
+//        this.username = new JTextField();
         this.getContentPane().add(this.username);
 
         this.getContentPane().add(new JLabel("密码"));
         this.password = new JPasswordField("j3vADrc0f");
+//        this.password = new JPasswordField();
         this.getContentPane().add(this.password);
 
         String[] str = {"用户", "员工", "领导"};
@@ -68,6 +70,7 @@ public class loginJFrame extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
         //注册还是登录
         if (e.getSource() == this.register) {
             register_user register_user = new register_user();
@@ -83,47 +86,58 @@ public class loginJFrame extends JFrame implements ActionListener {
             String pass = new String(password.getPassword());
 
 
-            String sql_pass = "select * from password where ID = '" + name + "' and UPower ='" + upd + "' and Password ='" + pass + "'";
-            String get = "";
-            try {
-                ResultSet rs = dbCon.executeQuery(sql_pass);
-                while (rs.next()) {
-                    get = rs.getString("ID");
+            if (upd.equals("0")) {
+                String sql_pass = "select * from password where ID = (select No from user where ID = '" + name + "') and UPower ='" + upd + "' and Password ='" + pass + "'";
+
+                String get = "";
+                try {
+                    ResultSet rs = dbCon.executeQuery(sql_pass);
+                    while (rs.next()) {
+                        get = rs.getString("ID");
+                    }
+//                    System.out.println(get);
+                    rs.close();
+                    dbCon.closeConn();
+                } catch (SQLException throwables) {
+                    JOptionPane.showMessageDialog(null, "登陆失败");
                 }
-
-                rs.close();
-                dbCon.closeConn();
-            } catch (SQLException throwables) {
-                JOptionPane.showMessageDialog(null, "登陆失败");
-            }
-
-            if (!get.equals("")) {
                 JOptionPane.showMessageDialog(null, "登陆成功");
-                if (upd.equals("0")) {
-                    userEntity = new userEntity(name);
-                    userApply userApply = null;
-                    try {
-                        userApply = new userApply(name);
-                    } catch (SQLException throwables) {
-                        JOptionPane.showMessageDialog(null, "登陆失败");
+
+                //显示界面
+                userEntity = new userEntity(get);
+                userApply userApply = null;
+                try {
+                    userApply = new userApply(get);
+                } catch (SQLException throwables) {
+                    JOptionPane.showMessageDialog(null, "登陆失败");
+                }
+                assert userApply != null;
+                userApply.setVisible(true);
+                dispose();
+            } else if (upd.equals("1")) {
+                String sql_pass = "select * from password where ID = '" + name + "' and UPower ='" + upd + "' and Password ='" + pass + "'";
+                String get = "";
+                try {
+                    ResultSet rs = dbCon.executeQuery(sql_pass);
+                    while (rs.next()) {
+                        get = rs.getString("ID");
                     }
-                    assert userApply != null;
-                    userApply.setVisible(true);
-                    dispose();
-                } else if (upd.equals("1")) {
-                    employerJFrame employerJFrame = null;
-                    try {
-                        employerJFrame = new employerJFrame(name);
-                    } catch (SQLException throwables) {
-                        JOptionPane.showMessageDialog(null, "登陆失败");
-                    }
-                    assert employerJFrame != null;
-                    employerJFrame.setVisible(true);
+
+                    rs.close();
+                    dbCon.closeConn();
+                } catch (SQLException throwables) {
+                    JOptionPane.showMessageDialog(null, "登陆失败");
                 }
 
-            } else JOptionPane.showMessageDialog(null, "失败");
-        }
-
-
+                employerJFrame employerJFrame = null;
+                try {
+                    employerJFrame = new employerJFrame(name);
+                } catch (SQLException throwables) {
+                    JOptionPane.showMessageDialog(null, "登陆失败");
+                }
+                assert employerJFrame != null;
+                employerJFrame.setVisible(true);
+            }
+        } else JOptionPane.showMessageDialog(null, "失败");
     }
 }

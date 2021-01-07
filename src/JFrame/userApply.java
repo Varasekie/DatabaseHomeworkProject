@@ -27,12 +27,16 @@ public class userApply extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         this.No = no;
-        String[] menus = {"管理订单", "管理房源", "看房时间查询", "个人信息管理", "成交订单查询"};
+        String[] menus = {"管理订单", "管理房源", "看房时间查询", "个人信息管理", "成交订单查询","房源浏览筛选"};
         this.buttons = new JButton[menus.length];
         for (int i = 0; i < menus.length; i++) {
             this.buttons[i] = new JButton(menus[i]);
             this.toolBar.add(buttons[i]);
         }
+
+        //一个动态筛选
+
+        //添加筛选内容
 
         //自己的订单期望
         this.buttons[0].addActionListener(e -> {
@@ -108,6 +112,16 @@ public class userApply extends JFrame {
 
             }
             table.setModel(tableModel);
+        });
+        this.buttons[5].addActionListener(e->{
+            selectHousesJFrame selectHousesJFrame = null;
+            try {
+                selectHousesJFrame = new selectHousesJFrame(No);
+            } catch (SQLException throwables) {
+//                throwables.printStackTrace();
+            }
+            selectHousesJFrame.setVisible(true);
+
         });
         this.getContentPane().add(this.toolBar, "North");
 
