@@ -33,7 +33,7 @@ public class matchHouseJFrame extends JFrame {
         String[] month = new String[12];
         String[] date = new String[31];
         for (int i = 0; i < year.length; i++) {
-            year[i] = i + 2000 + "";
+            year[i] = i +2000 + "";
         }
         for (int i = 0; i < month.length; i++) {
             month[i] = i + "";
@@ -60,14 +60,19 @@ public class matchHouseJFrame extends JFrame {
 
             int row = table.getSelectedRow();
             //根据选中的这一行的房子，insert一个看房
-            String insert_sql = "insert inspection (HouseNo,EmployerID,UserNo,Time) values (?,?,?,?)";
+            String insert_sql = "insert inspection (HouseNo,EmployerID,No,Time,condiotion) values (?,?,?,?,'未处理')";
 
             db db = new db(1);
             int[] time = new int[5];
-            time[0] = Integer.parseInt((String) Objects.requireNonNull(this.year.getSelectedItem()));
-            time[1] = Integer.parseInt((String) Objects.requireNonNull(this.month.getSelectedItem()));
-            time[2] = Integer.parseInt((String) Objects.requireNonNull(this.date.getSelectedItem()));
-            Date date1 = new Date(time[0], time[1], time[2]);
+            time[0] = this.year.getSelectedIndex();
+            time[1] = this.year.getSelectedIndex();
+            time[2] = this.year.getSelectedIndex();
+            Date date1 = new Date(time[0]+10, time[1], time[2]);
+            System.out.println(time[0]);
+            System.out.println(time[1]);
+            System.out.println(time[2]);
+            System.out.println(date1.toString());
+//            date1.setTime(1999-3-3);
             //直接在这里判断，是否有不一样的
 
             PreparedStatement preparedStatement = null;

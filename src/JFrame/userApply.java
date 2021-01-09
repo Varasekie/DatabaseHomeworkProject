@@ -14,14 +14,14 @@ import java.util.ArrayList;
 public class userApply extends JFrame {
     private JTable table;
     JToolBar toolBar = new JToolBar();
-    private String No;
+    private final String No;
     MyTableModel tableModel;
     JButton add, update, delete;
     JButton[] buttons;
     int which = 0;//这个数值判断是判断是订单和房子
 
     public userApply(String no) throws SQLException {
-        super("房产中介系统");
+        super("房产中介系统 欢迎用户"+no);
         this.setSize(800, 500);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -79,8 +79,8 @@ public class userApply extends JFrame {
             try {
                 tableModel = getModel();
             } catch (SQLException throwables) {
-                JOptionPane.showMessageDialog(null, "获取数据失败");
-//                throwables.printStackTrace();
+//                JOptionPane.showMessageDialog(null, "获取数据失败");
+                throwables.printStackTrace();
             }
             table.setModel(tableModel);
         });
@@ -113,7 +113,10 @@ public class userApply extends JFrame {
             }
             table.setModel(tableModel);
         });
+        //房源浏览筛选
         this.buttons[5].addActionListener(e->{
+
+
             selectHousesJFrame selectHousesJFrame = null;
             try {
                 selectHousesJFrame = new selectHousesJFrame(No);
@@ -238,6 +241,7 @@ public class userApply extends JFrame {
                     }
                 }
                 int n = JOptionPane.showConfirmDialog(null, "确认修改为" + confirm);
+
                 String update_sql = "update house set Area = ? ,Location = ? ,Type =? ," +
                         " Price = ?," +
                         "Picture = ? ,Conditions = ? where HouseNo = ?";
@@ -495,7 +499,7 @@ public class userApply extends JFrame {
                 inspectionEntity inspectionEntity = new inspectionEntity();
                 inspectionEntity.setEmployerName(resultSet.getString("employerName"));
                 inspectionEntity.setEmployerTele(resultSet.getString("employerTele"));
-                inspectionEntity.setLocation(resultSet.getString("address"));
+                inspectionEntity.setLocation(resultSet.getString("houseLocation"));
                 inspectionEntity.setTime(resultSet.getString("time"));
                 inspectionEntity.setUserName(resultSet.getString("userName"));
                 v.add(inspectionEntity);
@@ -545,11 +549,11 @@ public class userApply extends JFrame {
         //这里是已经成交订单查询
         else {
             int i;
-            ResultSet resultSet = dbCon.executeQuery("select * from deal where No = '" + No + "'");
+            ResultSet resultSet = dbCon.executeQuery("select * from dealinformation_view where BuyerNo = '" + No + "'");
 
             //身份证号不支持修改
             //应该看不到房主另一方，因为是和中介签和议
-            String[] str_personal = {"房子编码", "中介人", "成交时间", "成交价格"};
+            String[] str_personal = {"房子地址", "中介人姓名", "成交时间", "成交价格"};
             for (i = 0; i < str_personal.length; i++) {
                 tableModel.addColumn(str_personal[i]);
             }
@@ -561,15 +565,18 @@ public class userApply extends JFrame {
                 dealEntity.setContract(resultSet.getString("contract"));
                 dealEntity.setDate(resultSet.getDate("Time"));
                 dealEntity.setEmployId(resultSet.getString("EmployerID"));
+                dealEntity.setHouseLocation(resultSet.getString("houseLocation"));
                 dealEntity.setHouseId(resultSet.getString("HouseNo"));
+                System.out.println(resultSet.getString("HouseNo"));
                 dealEntity.setPrice(resultSet.getString("Price"));
+                dealEntity.setEmployerName(resultSet.getString("EmployerName"));
                 v.add(dealEntity);
             }
             resultSet.close();
             for (i = 0; i < v.size(); i++) {
                 tableModel.addRow(new Object[]{
-                        v.get(i).getHouseId(),
-                        v.get(i).getEmployId(),
+                        v.get(i).getHouseLocation(),
+                        v.get(i).getEmployerName(),
                         v.get(i).getDate().toString(),
                         v.get(i).getPrice()
                 });

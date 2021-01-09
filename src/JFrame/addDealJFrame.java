@@ -110,6 +110,7 @@ public class addDealJFrame extends JFrame implements FocusListener {
             }
         });
         //可以直接设置成交时间是现在录入吗x
+
         this.getContentPane().add(new JLabel("成交时间"));
         String[] year = new String[30];
         String[] month = new String[12];
@@ -154,13 +155,15 @@ public class addDealJFrame extends JFrame implements FocusListener {
                     "values (?,?,?,?,?)";
             db db = new db();
 
+            //获得当前的时间
+            java.sql.Date date2 = new java.sql.Date(2021,1,8);
             //直接在这里判断，是否有不一样的
             try {
                 PreparedStatement preparedStatement = db.preparedStatement(add_sql);
                 preparedStatement.setString(1, HouseNo);
                 preparedStatement.setString(2, No);
                 preparedStatement.setString(3, userId);//用户
-                preparedStatement.setString(4, str);
+                preparedStatement.setDate(4, date2);
                 preparedStatement.setString(5, price);
                 preparedStatement.addBatch();
                 preparedStatement.executeBatch();

@@ -15,7 +15,7 @@ public class employerJFrame extends JFrame {
     JButton[] buttons;
     private String No;
     MyTableModel tableModel;
-    JButton add, update, delete, match;
+    JButton add, update, delete, match,follow;
     JCheckBox checkBox;
     JComboBox<String> year, month;
     int which = 0;
@@ -132,7 +132,6 @@ public class employerJFrame extends JFrame {
             }
             assert tableModel != null;
             table.setModel(tableModel);
-
         });
 
         //对用户信息的更改
@@ -187,15 +186,18 @@ public class employerJFrame extends JFrame {
             this.month.setVisible(true);
             try {
                 db db = new db(1);
-                CallableStatement proc = db.prepareCall("{ call col_wage(?, ?,?,?) }");
+                CallableStatement proc = db.prepareCall("{call col_wage(?,?,?,?) }");
 
                 //获取选中的年月
                 int years = Integer.parseInt((String) Objects.requireNonNull(this.year.getSelectedItem()));
                 int months = Integer.parseInt((String) Objects.requireNonNull(this.month.getSelectedItem()));
                 //就是没选中
+
                 if (years == -1 || months == -1) {
                     JOptionPane.showMessageDialog(null, "请先选中年月");
                 }
+
+
                 proc.setDate(1, new Date(years - months));
                 proc.setInt(2, 100);
                 proc.setString(3, No);
@@ -204,9 +206,6 @@ public class employerJFrame extends JFrame {
 
                 int i = proc.getInt(4);
 
-                if (count == 1) {
-                    i = count - 100;
-                }
                 JOptionPane.showMessageDialog(null, "这个月的提成为" + i + "元");
                 count++;
             } catch (SQLException throwables) {
@@ -216,7 +215,7 @@ public class employerJFrame extends JFrame {
             try {
                 tableModel = getModel();
             } catch (SQLException throwables) {
-//                throwables.printStackTrace();
+
             }
             assert tableModel != null;
             table.setModel(tableModel);
@@ -229,6 +228,7 @@ public class employerJFrame extends JFrame {
         jPanel.add(this.update = new JButton("更新"));
         jPanel.add(this.delete = new JButton("删除"));
         jPanel.add(this.match = new JButton("匹配"));
+        jPanel.add(this.follow = new JButton("跟进"));
         jPanel.add(this.checkBox = new JCheckBox("仅看未完成的"));
         jPanel.add(this.year);
         jPanel.add(this.month);
@@ -547,7 +547,6 @@ public class employerJFrame extends JFrame {
                         }
                     }
                 }
-
             }
 
             //不能删除工资
@@ -632,8 +631,6 @@ public class employerJFrame extends JFrame {
                     houseEntity.setPrice(resultSet.getString("Price"));
                     houseEntity.setEmployId(resultSet.getString("EmployerId"));
 
-//                    userEntity.setTele(resultSet.getString("tele"));
-//                    userEntity.setName(resultSet.getString("name"));
                     v.add(houseEntity);
                 }
                 resultSet.close();
@@ -645,7 +642,6 @@ public class employerJFrame extends JFrame {
                             houseEntity.getLocation(),
                             houseEntity.getType(),
                             houseEntity.getPrice(),
-
                     });
 //                    System.out.println(houseEntity.toString());
                 }
@@ -665,6 +661,15 @@ public class employerJFrame extends JFrame {
 
         });
 
+        //订单跟进
+        this.follow.addActionListener(e->{
+           //选中订单，将订单变成成交或者是退回，将房子变成
+            int row = table.getSelectedRow();
+            String userNo = table.getValueAt(row,0).toString();
+            String houseNo = table.getValueAt(row,5).toString();
+            chooseCondition chooseCondition = new chooseCondition(houseNo,No,userNo);
+            chooseCondition.setVisible(true);
+        });
         //是否看已完成订单
         this.checkBox.addActionListener(e -> {
             try {
@@ -678,6 +683,8 @@ public class employerJFrame extends JFrame {
         this.getContentPane().add(this.toolBar, "North");
         this.setVisible(true);
     }
+
+
 
     private MyTableModel getModel() throws SQLException {
         MyTableModel tableModel = new MyTableModel();
@@ -733,10 +740,11 @@ public class employerJFrame extends JFrame {
         //这个是成交
         if (which == 1) {
             int i;
-            ResultSet resultSet = dbCon.executeQuery("select * from deal where employerID = '" + No + "'");
-            //中介应该能看到比较详细的内容(哎算了都一样，看到的都是那些而已
-            //这里换了一个
-            String[] str_personal = {"房子编码", "用户编号", "成交时间", "成交价格"};
+            ResultSet resultSet = dbCon.executeQuery("select * from dealinformation_view where EmployerId = '" + No + "'");
+
+            //身份证号不支持修改
+            //应该看不到房主另一方，因为是和中介签和议
+            String[] str_personal = {"房子地址","买家姓名", "买家电话","成交时间", "成交价格","买家编号","房子编号"};
             for (i = 0; i < str_personal.length; i++) {
                 tableModel.addColumn(str_personal[i]);
             }
@@ -747,32 +755,43 @@ public class employerJFrame extends JFrame {
                 dealEntity dealEntity = new dealEntity();
                 dealEntity.setContract(resultSet.getString("contract"));
                 dealEntity.setDate(resultSet.getDate("Time"));
-                dealEntity.setNo(resultSet.getString("No"));
                 dealEntity.setEmployId(resultSet.getString("EmployerID"));
+                dealEntity.setHouseLocation(resultSet.getString("houseLocation"));
                 dealEntity.setHouseId(resultSet.getString("HouseNo"));
+                dealEntity.setBuyerName(resultSet.getString("BuyerName"));
+                dealEntity.setBuyerTele(resultSet.getString("BuyerTele"));
+                dealEntity.setNo(resultSet.getString("BuyerNo"));
                 dealEntity.setPrice(resultSet.getString("Price"));
+                dealEntity.setEmployerName(resultSet.getString("EmployerName"));
                 v.add(dealEntity);
             }
             resultSet.close();
             for (i = 0; i < v.size(); i++) {
                 tableModel.addRow(new Object[]{
-                        v.get(i).getHouseId(),
-                        v.get(i).getNo(),
+//                        v.get(i).getHouseId(),
+//                        v.get(i).getEmployId(),
+                        v.get(i).getHouseLocation(),
+                        v.get(i).getBuyerName(),
+                        v.get(i).getBuyerTele(),
                         v.get(i).getDate().toString(),
                         v.get(i).getPrice(),
+                        v.get(i).getNo(),
+                        v.get(i).getHouseId()
                 });
             }
             dbCon.closeConn();
             return tableModel;
+
         }
         //预约信息的获取,看房时间
         if (which == 2) {
+            //这里是看房时间
             int i;
             ResultSet resultSet = dbCon.executeQuery("select * from inspect_view where employerNo = '" + No + "'");
             //这里状态就自动生成吧（……
             //但是可以用存储过程欸x
             //这里状态先删掉x
-            String[] str_inspction = {"用户姓名", "房子地址", "看房时间", "交接人姓名", "交接人电话"};
+            String[] str_inspction = {"用户编号","用户姓名", "房子地址", "看房时间", "交接人电话","房子编号"};
 
             for (i = 0; i < str_inspction.length; i++) {
                 tableModel.addColumn(str_inspction[i]);
@@ -784,19 +803,25 @@ public class employerJFrame extends JFrame {
                 inspectionEntity inspectionEntity = new inspectionEntity();
                 inspectionEntity.setEmployerName(resultSet.getString("employerName"));
                 inspectionEntity.setEmployerTele(resultSet.getString("employerTele"));
-                inspectionEntity.setLocation(resultSet.getString("address"));
+                inspectionEntity.setLocation(resultSet.getString("houseLocation"));
                 inspectionEntity.setTime(resultSet.getString("time"));
                 inspectionEntity.setUserName(resultSet.getString("userName"));
+                inspectionEntity.setUserTele(resultSet.getString("userTele"));
+                inspectionEntity.setUserNo(resultSet.getString("userNo"));
+                inspectionEntity.setHouseNo(resultSet.getString("HouseNo"));
                 v.add(inspectionEntity);
             }
             resultSet.close();
             for (i = 0; i < v.size(); i++) {
                 tableModel.addRow(new Object[]{
+                        v.get(i).getUserNo(),
                         v.get(i).getUserName(),
                         v.get(i).getLocation(),
                         v.get(i).getTime(),
-                        v.get(i).getEmployerName(),
-                        v.get(i).getEmployerTele()
+//                        v.get(i).getEmployerName(),
+                        v.get(i).getUserTele(),
+                        v.get(i).getHouseNo()
+//                        v.get(i).getEmployerTele()
                 });
             }
             dbCon.closeConn();
@@ -819,7 +844,7 @@ public class employerJFrame extends JFrame {
             //自己个人信息
             ArrayList<employerEntity> v = new ArrayList<employerEntity>();
             while (resultSet.next()) {
-                employerEntity employerEntity = new employerEntity(this.No);
+                employerEntity employerEntity = new employerEntity();
                 employerEntity.setNo(this.No);
                 employerEntity.setSex(resultSet.getString("Sex"));
                 employerEntity.setName(resultSet.getString("name"));
@@ -863,6 +888,7 @@ public class employerJFrame extends JFrame {
 
                 v.add(userEntity);
             }
+
             resultSet.close();
             for (i = 0; i < v.size(); i++) {
                 tableModel.addRow(new Object[]{

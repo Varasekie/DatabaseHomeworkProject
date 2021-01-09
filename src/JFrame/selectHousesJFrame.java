@@ -122,6 +122,19 @@ public class selectHousesJFrame extends JFrame implements ActionListener {
             //选择预约时间
             //时间面板
 
+            int row = table.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(null, "请选中某一行");
+            }
+            try{
+                String houseNo = table.getValueAt(row, 0).toString();
+                //要传参
+//            System.out.println(houseNo);
+                timeSelectJFrame timeSelectJFrame = new timeSelectJFrame(No,houseNo);
+                timeSelectJFrame.setVisible(true);
+            }catch (Exception e1){
+
+            }
         });
         this.cancel = new JButton("取消");
         this.cancel.addActionListener(e -> {
@@ -148,15 +161,15 @@ public class selectHousesJFrame extends JFrame implements ActionListener {
             String high_price = this.jComboBoxes[1].getSelectedItem().toString();
             String low_area = this.jComboBoxes[2].getSelectedItem().toString();
             String high_area = this.jComboBoxes[3].getSelectedItem().toString();
-
-            System.out.println(low_price);
-            System.out.println(high_area);
-            System.out.println(high_price);
-            System.out.println(low_area);
+//
+//            System.out.println(low_price);
+//            System.out.println(high_area);
+//            System.out.println(high_price);
+//            System.out.println(low_area);
             String type = this.radios[0].isSelected() ? "租" : "卖";
             String location = this.province.getSelectedItem().toString() + this.city.getSelectedItem().toString();
-            System.out.println(type);
-            System.out.println(location);
+//            System.out.println(type);
+//            System.out.println(location);
 
             String sql = "select *  from house where conditions = '空闲' " +
                     "and price >='" + (low_price.equals("无要求") ? "0" : (String) this.jComboBoxes[0].getSelectedItem()) +

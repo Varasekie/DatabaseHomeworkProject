@@ -7,6 +7,24 @@ public class inspectionEntity {
     String time;
     String userTele;
     String employerTele;
+    String HouseNo;
+    String userNo;
+
+    public String getUserNo() {
+        return userNo;
+    }
+
+    public void setUserNo(String userNo) {
+        this.userNo = userNo;
+    }
+
+    public String getHouseNo() {
+        return HouseNo;
+    }
+
+    public void setHouseNo(String houseNo) {
+        HouseNo = houseNo;
+    }
 
     public String getEmployerTele() {
         return employerTele;

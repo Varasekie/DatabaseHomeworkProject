@@ -141,3 +141,23 @@ public class loginJFrame extends JFrame implements ActionListener {
         } else JOptionPane.showMessageDialog(null, "失败");
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

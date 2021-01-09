@@ -9,6 +9,44 @@ public class dealEntity {
     private Date date;
     private String contract;
     private String price;
+    private String employerName;
+    private String BuyerName;
+
+    private String BuyerTele;
+
+    public String getBuyerTele() {
+        return BuyerTele;
+    }
+
+    public void setBuyerTele(String buyerTele) {
+        BuyerTele = buyerTele;
+    }
+
+    public String getBuyerName() {
+        return BuyerName;
+    }
+
+    public void setBuyerName(String buyerName) {
+        BuyerName = buyerName;
+    }
+
+    public String getHouseLocation() {
+        return houseLocation;
+    }
+
+    public void setHouseLocation(String houseLocation) {
+        this.houseLocation = houseLocation;
+    }
+
+
+    private String houseLocation;
+    public String getEmployerName() {
+        return employerName;
+    }
+
+    public void setEmployerName(String employerName) {
+        this.employerName = employerName;
+    }
 
     public String getNo() {
         return No;

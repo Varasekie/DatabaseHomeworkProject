@@ -10,9 +10,9 @@ public class employerEntity {
     private String tele;
     private String IDCard;
 
-    public employerEntity(String no) {
-        this.no = no;
-    }
+//    public employerEntity(String no) {
+//        this.no = no;
+//    }
 
     public String getNo() {
         return no;

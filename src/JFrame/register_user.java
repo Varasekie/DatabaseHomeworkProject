@@ -43,8 +43,15 @@ public class register_user extends JFrame implements ActionListener, FocusListen
         userIdMesssage2.setBounds(580, 125, 135, 20);
         userIdMesssage2.setVisible(false);
         panel.add(userIdMesssage2);
-        this.username = new JTextField("" + (int) (Math.random() * 1000000));
+
+        String usernames = ""+ (int) (Math.random() * 1000000);
+        while (!check(usernames)){
+            usernames = ""+ (int) (Math.random() * 1000000);
+        }
+        this.username = new JTextField(usernames);
         panel.add(username);
+        this.username.setEditable(false);
+
 
 
         panel.add(new JLabel("真实姓名"));
@@ -268,7 +275,7 @@ public class register_user extends JFrame implements ActionListener, FocusListen
                             //防止结果集为空报错
                             rs.last();
                         }
-                        rs.close();
+                        rs.close();rs1.close();
                         dbCon.closeConn();
                         this.dispose();
                         userApply userApply = new userApply(no);
@@ -287,7 +294,27 @@ public class register_user extends JFrame implements ActionListener, FocusListen
             this.dispose();
         }
     }
+    private boolean check(String username){
+        //然后在判断是否数据库中已经有了这个身份证，有的话显示已经有了
+        String sql_id = "select * from user where ID = '" + username + "'";
+        //暂时先都用root权限登录
+        //后期这里改成了游客
+        db dbCon = new db(1);
+        try {
+            ResultSet rs = dbCon.executeQuery(sql_id);
+            if (rs.next()) {
+                //防止结果集为空报错
+                rs.last();
+                return false;
+//                emailMessage2.setVisible(true);
+            }
+            rs.close();
+            dbCon.closeConn();
+        } catch (SQLException ignored) {
 
+        }
+        return true;
+    }
     @Override
     public void focusGained(FocusEvent e) {
 

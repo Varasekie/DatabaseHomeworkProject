@@ -70,6 +70,8 @@ public class addInspctionJFrame extends JFrame implements ActionListener {
         this.getContentPane().add(this.add = new JButton("添加"));
         this.getContentPane().add(this.cancel = new JButton("取消"));
         this.add.addActionListener(e -> {
+
+
             //这里是添加
             db db = new db();
             String add_sql = "insert inspection (HouseNo,EmployerId,UserNo,Time) values(?,?,?,?)";
@@ -77,7 +79,6 @@ public class addInspctionJFrame extends JFrame implements ActionListener {
             try {
                 for (int i = 0; i < textFields.length-1; i++) {
                     ints[i] = Integer.parseInt(this.textFields[i].getText());
-//                    System.out.println(ints[i]);
                 }
             } catch (NumberFormatException e1) {
                 JOptionPane.showMessageDialog(null, "输入数字有错误2563280005");
